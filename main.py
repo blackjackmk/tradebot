@@ -1,22 +1,25 @@
 import requests
 import datetime
-import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.pyplot as plt
 matplotlib.use('QtAgg') 
 import numpy as np
+import pandas as pd
 
-fag = requests.get("https://api.alternative.me/fng/?limit=0") #limit=0 for all data
+fag = requests.get("https://api.alternative.me/fng/?limit=30") #limit=0 for all data
 
 response = fag.json() # python dict
 data = response["data"] #list
 datestamps = []
 values_list = []
+labels = []
 
 for d in data:
     values_list.insert(0, int(d["value"]))
     date_obj = datetime.datetime.fromtimestamp(int(d["timestamp"]))
     new_format = date_obj.strftime("%d/%m/%Y")
     datestamps.insert(0, new_format)
+    labels.insert(0, d["value_classification"])
 
 dates = np.array(datestamps)
 values = np.array(values_list)
