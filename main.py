@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 matplotlib.use('QtAgg')
 import pandas as pd
 
-fag = requests.get("https://api.alternative.me/fng/?limit=30") #limit=0 for all data
+fag = requests.get("https://api.alternative.me/fng/?limit=0") #limit=0 for all data
 
 response = fag.json() # python dict
 data = response["data"] #list
@@ -28,6 +28,11 @@ df = pd.DataFrame({"Value":values_list, "Date":datestamps, "Label":labels})
 
 # ####HISTOGRAM####
 # df['Value'].plot(kind='hist')
+# plt.show()
+
+#####BAR####
+# labels_count = df["Label"].value_counts()
+# labels_count.plot(kind='bar')
 # plt.show()
 
 ####SCATTER#####
