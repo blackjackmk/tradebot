@@ -2,8 +2,7 @@ import requests
 import datetime
 import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.use('QtAgg') 
-import numpy as np
+matplotlib.use('QtAgg')
 import pandas as pd
 
 fag = requests.get("https://api.alternative.me/fng/?limit=30") #limit=0 for all data
@@ -21,26 +20,18 @@ for d in data:
     datestamps.insert(0, new_format)
     labels.insert(0, d["value_classification"])
 
-dates = np.array(datestamps)
-values = np.array(values_list)
+df = pd.DataFrame({"Value":values_list, "Date":datestamps, "Label":labels})
 
-#####CHART#####
-# # Plot the data
-# plt.figure(figsize=(10, 6))
-# plt.plot(dates, values, marker='o')
-
-# # Add labels and title
-# plt.xlabel('Date')
-# plt.ylabel('Value')
-# plt.title('Values Over Time')
-# plt.grid(True)
-
-# # Show the plot
+# #####CHART#####
+# df.plot(x='Date', y='Value')
 # plt.show()
 
-#histogram wartości
-plt.hist(values)
-plt.show()
+# ####HISTOGRAM####
+# df['Value'].plot(kind='hist')
+# plt.show()
 
+####SCATTER#####
+df.plot(kind='scatter', x='Value', y='Label')
+plt.show()
 
 
