@@ -5,7 +5,7 @@ import matplotlib
 matplotlib.use('QtAgg') 
 import numpy as np
 
-fag = requests.get("https://api.alternative.me/fng/?limit=10") #limit=0 for all data
+fag = requests.get("https://api.alternative.me/fng/?limit=0") #limit=0 for all data
 
 response = fag.json() # python dict
 data = response["data"] #list
@@ -21,18 +21,22 @@ for d in data:
 dates = np.array(datestamps)
 values = np.array(values_list)
 
-#chart
-# Plot the data
-plt.figure(figsize=(10, 6))
-plt.plot(dates, values, marker='o')
+#####CHART#####
+# # Plot the data
+# plt.figure(figsize=(10, 6))
+# plt.plot(dates, values, marker='o')
 
-# Add labels and title
-plt.xlabel('Date')
-plt.ylabel('Value')
-plt.title('Values Over Time')
-plt.grid(True)
+# # Add labels and title
+# plt.xlabel('Date')
+# plt.ylabel('Value')
+# plt.title('Values Over Time')
+# plt.grid(True)
 
-# Show the plot
+# # Show the plot
+# plt.show()
+
+#histogram wartości
+plt.hist(values)
 plt.show()
 
 
