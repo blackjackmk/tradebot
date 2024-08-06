@@ -31,7 +31,8 @@ color_map = {
     "Extreme Fear": "red",
     "Fear": "orange",
     "Neutral": "blue",
-    "Greed": "green"
+    "Greed": (112/255, 224/255, 0, 1),
+    "Extreme Greed": "green"
 }
 
 colors = df['Label'].map(color_map)
@@ -50,7 +51,7 @@ colors = df['Label'].map(color_map)
 # plt.show()
 
 ####SCATTER#####
-df.plot(kind='scatter', x='Value', y='Close', c=colors, colormap='viridis')
-plt.show()
+# df.plot(kind='scatter', x='Value', y='Close', c=colors)
+# plt.show()
 
 
