@@ -28,6 +28,19 @@ df_main = pd.DataFrame({"Value":values_list, "Date":datestamps, "Label":labels})
 dfmerge = df_main.merge(btc_sub, left_on="Date", right_on='Start', how='left')
 df = dfmerge.drop('Start', axis=1)
 
+#####CHART#####
+scale = StandardScaler()
+df_scaled = scale.fit_transform(df[['Value', 'Close']])
+df_scaled = pd.DataFrame(df_scaled, columns=['Index', 'Price'])
+df_scaled.insert(0, "Date", df['Date'], False)
+df_scaled.plot(x='Date', y = ['Index', 'Price'])
+plt.show()
+
+####HISTOGRAM####
+# # df['Value'].plot(kind='kde')
+# df['Value'].plot(kind='hist')
+# plt.show()
+
 color_map = {
     "Extreme Fear": "red",
     "Fear": "orange",
@@ -36,15 +49,6 @@ color_map = {
     "Extreme Greed": "green"
 }
 colors = df['Label'].map(color_map)
-
-#####CHART#####
-df.plot(x='Date', y=['Value', 'Close'], )
-plt.show()
-
-####HISTOGRAM####
-# # df['Value'].plot(kind='kde')
-# df['Value'].plot(kind='hist')
-# plt.show()
 
 #####BAR####
 # labels_count = df["Label"].value_counts()
