@@ -4,6 +4,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use('QtAgg')
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
 
 fag = requests.get("https://api.alternative.me/fng/?limit=30") #limit=0 for all data
 
@@ -34,20 +35,22 @@ color_map = {
     "Greed": (112/255, 224/255, 0, 1),
     "Extreme Greed": "green"
 }
-
 colors = df['Label'].map(color_map)
 
-# #####CHART#####
-# df.plot(x='Date', y=['Value', 'Close'])
-# plt.show()
+#####CHART#####
+df.plot(x='Date', y=['Value', 'Close'], )
+plt.show()
 
-# ####HISTOGRAM####
+####HISTOGRAM####
+# # df['Value'].plot(kind='kde')
 # df['Value'].plot(kind='hist')
 # plt.show()
 
 #####BAR####
 # labels_count = df["Label"].value_counts()
-# labels_count.plot(kind='bar')
+# labels = labels_count.index.to_list()
+# counts = labels_count.to_list()
+# plt.bar(labels, counts, color=[color_map[label] for label in labels])
 # plt.show()
 
 ####SCATTER#####
