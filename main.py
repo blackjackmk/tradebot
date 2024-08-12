@@ -6,10 +6,10 @@ matplotlib.use('QtAgg')
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-fag = requests.get("https://api.alternative.me/fng/?limit=30") #limit=0 for all data
+fag = requests.get("https://api.alternative.me/fng/?limit=368") #limit=0 for all data
 
-btc = pd.read_csv("btc_30.csv")
-btc_sub = btc[['Start', 'Close']]
+btc = pd.read_csv("BTC-USD.csv")
+btc_sub = btc[['Date', 'Close']]
 
 response = fag.json() # python dict
 data = response["data"] #list
@@ -24,17 +24,28 @@ for d in data:
     datestamps.insert(0, new_format)
     labels.insert(0, d["value_classification"])
 
-df_main = pd.DataFrame({"Value":values_list, "Date":datestamps, "Label":labels})
-dfmerge = df_main.merge(btc_sub, left_on="Date", right_on='Start', how='left')
-df = dfmerge.drop('Start', axis=1)
+# plt.subplot(2, 1, 1)
+# plt.plot(datestamps, values_list, '^:r' )
+# plt.title("Index Value over Time")
+# plt.xlabel("Date")
+# plt.ylabel("Index")
+# plt.grid(axis = 'y', color = 'green', linestyle = '--', linewidth = 0.5)
+# plt.subplot(2, 1, 2)
+# plt.plot(btc_sub['Date'], btc_sub['Close'])
+# plt.show()
+
+
+
+df = pd.DataFrame({"Value":values_list, "Date":datestamps, "Label":labels})
+df = df.merge(btc_sub, on="Date", how='left')
 
 #####CHART#####
-scale = StandardScaler()
-df_scaled = scale.fit_transform(df[['Value', 'Close']])
-df_scaled = pd.DataFrame(df_scaled, columns=['Index', 'Price'])
-df_scaled.insert(0, "Date", df['Date'], False)
-df_scaled.plot(x='Date', y = ['Index', 'Price'])
-plt.show()
+# scale = StandardScaler()
+# df_scaled = scale.fit_transform(df[['Value', 'Close']])
+# df_scaled = pd.DataFrame(df_scaled, columns=['Index', 'Price'])
+# df_scaled.insert(0, "Date", df['Date'], False)
+# df_scaled.plot(x='Date', y = ['Index', 'Price'])
+# plt.show()
 
 ####HISTOGRAM####
 # # df['Value'].plot(kind='kde')
