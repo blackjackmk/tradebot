@@ -10,34 +10,30 @@ fag = requests.get("https://api.alternative.me/fng/?limit=368") #limit=0 for all
 
 btc = pd.read_csv("BTC-USD.csv")
 btc_sub = btc[['Date', 'Close']]
+btc_sub['Date'] = pd.to_datetime(btc_sub['Date'])
 
 response = fag.json() # python dict
 data = response["data"] #list
-datestamps = []
-values_list = []
-labels = []
+df = pd.DataFrame(data)
+df = df.dropna(axis=1)
+df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
 
-for d in data:
-    values_list.insert(0, int(d["value"]))
-    date_obj = datetime.datetime.fromtimestamp(int(d["timestamp"]))
-    new_format = date_obj.strftime("%Y-%m-%d")
-    datestamps.insert(0, new_format)
-    labels.insert(0, d["value_classification"])
+df = df.sort_values(by='timestamp')
+df = df.merge(btc_sub, how='left', left_on='timestamp', right_on='Date')
+df = df.dropna()
+df = df.drop(columns='timestamp')
+df = df.rename(columns={'value': 'Value', 'value_classification': 'Label'})
+print(df.tail())
 
 # plt.subplot(2, 1, 1)
-# plt.plot(datestamps, values_list, '^:r' )
+# plt.plot(df['Date'], df['Value'], '*-b' )
 # plt.title("Index Value over Time")
 # plt.xlabel("Date")
 # plt.ylabel("Index")
 # plt.grid(axis = 'y', color = 'green', linestyle = '--', linewidth = 0.5)
 # plt.subplot(2, 1, 2)
-# plt.plot(btc_sub['Date'], btc_sub['Close'])
+# plt.plot(df['Date'], df['Close'])
 # plt.show()
-
-
-
-df = pd.DataFrame({"Value":values_list, "Date":datestamps, "Label":labels})
-df = df.merge(btc_sub, on="Date", how='left')
 
 #####CHART#####
 # scale = StandardScaler()
@@ -52,14 +48,14 @@ df = df.merge(btc_sub, on="Date", how='left')
 # df['Value'].plot(kind='hist')
 # plt.show()
 
-color_map = {
-    "Extreme Fear": "red",
-    "Fear": "orange",
-    "Neutral": "blue",
-    "Greed": (112/255, 224/255, 0, 1),
-    "Extreme Greed": "green"
-}
-colors = df['Label'].map(color_map)
+# color_map = {
+#     "Extreme Fear": "red",
+#     "Fear": "orange",
+#     "Neutral": "blue",
+#     "Greed": (112/255, 224/255, 0, 1),
+#     "Extreme Greed": "green"
+# }
+# colors = df['Label'].map(color_map)
 
 #####BAR####
 # labels_count = df["Label"].value_counts()
