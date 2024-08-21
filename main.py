@@ -4,14 +4,15 @@ import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use('QtAgg')
 import pandas as pd
+import yfinance as yf
 from sklearn.preprocessing import StandardScaler
 
-fag = requests.get("https://api.alternative.me/fng/?limit=368") #limit=0 for all data
-
-btc = pd.read_csv("BTC-USD.csv")
+btc = yf.download(tickers='BTC-USD', period='1y')
+btc.reset_index(inplace=True)
 btc_sub = btc[['Date', 'Close']]
 btc_sub['Date'] = pd.to_datetime(btc_sub['Date'])
 
+fag = requests.get("https://api.alternative.me/fng/?limit=365") #limit=0 for all data
 response = fag.json() # python dict
 data = response["data"] #list
 df = pd.DataFrame(data)
@@ -23,17 +24,22 @@ df = df.merge(btc_sub, how='left', left_on='timestamp', right_on='Date')
 df = df.dropna()
 df = df.drop(columns='timestamp')
 df = df.rename(columns={'value': 'Value', 'value_classification': 'Label'})
-print(df.tail())
 
-# plt.subplot(2, 1, 1)
-# plt.plot(df['Date'], df['Value'], '*-b' )
-# plt.title("Index Value over Time")
-# plt.xlabel("Date")
-# plt.ylabel("Index")
-# plt.grid(axis = 'y', color = 'green', linestyle = '--', linewidth = 0.5)
-# plt.subplot(2, 1, 2)
-# plt.plot(df['Date'], df['Close'])
-# plt.show()
+plt.subplot(2, 1, 1)
+plt.plot(df['Date'], df['Value'])
+plt.title("Index Value over Time")
+plt.subplot(2, 1, 2)
+plt.plot(df['Date'], df['Close'])
+plt.show()
+
+# color_map = {
+#     "Extreme Fear": "red",
+#     "Fear": "orange",
+#     "Neutral": "blue",
+#     "Greed": (112/255, 224/255, 0, 1),
+#     "Extreme Greed": "green"
+# }
+# colors = df['Label'].map(color_map)
 
 #####CHART#####
 # scale = StandardScaler()
@@ -47,15 +53,6 @@ print(df.tail())
 # # df['Value'].plot(kind='kde')
 # df['Value'].plot(kind='hist')
 # plt.show()
-
-# color_map = {
-#     "Extreme Fear": "red",
-#     "Fear": "orange",
-#     "Neutral": "blue",
-#     "Greed": (112/255, 224/255, 0, 1),
-#     "Extreme Greed": "green"
-# }
-# colors = df['Label'].map(color_map)
 
 #####BAR####
 # labels_count = df["Label"].value_counts()
