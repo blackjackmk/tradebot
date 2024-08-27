@@ -11,7 +11,7 @@ def set_signals(data, buy_threshold, sell_threshold):
     for i, row in data.iterrows():
         if row['Value'] < buy_threshold:
             data.at[i, 'Signal'] = 'Buy'
-        elif row['Value'] > sell_threshold:
+        elif row['Value'] >= sell_threshold:
             data.at[i, 'Signal'] = 'Sell'
     return data
 

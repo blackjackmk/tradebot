@@ -9,31 +9,25 @@ feature_df = df.copy()
 feature_df = feature_df.drop('Label', axis=1)
 
 # (3;1.5) (5;1.25) (7;1.75)
-ma = 5
-porog = 1.75
+ma = 3
+porog = 1.5
+buy_threshold = 45
+sell_threshold = 70
 
 feature_df[f'Index MA{ma}'] = feature_df['Value'].rolling(window=ma).mean()
 feature_df['Deviation'] = feature_df['Value'] - feature_df[f'Index MA{ma}']
 
 std_dev = feature_df['Deviation'].std()
 feature_df['Jump'] = feature_df['Deviation'].abs() > (porog * std_dev)
-feature_df.loc[feature_df['Value'] > 45, 'Jump'] = False
+
+feature_df.loc[feature_df['Jump'] & (feature_df['Value'] < buy_threshold), 'Signal'] = 'Buy'
+feature_df.loc[feature_df['Jump'] & (feature_df['Value'] >= sell_threshold), 'Signal'] = 'Sell'
 
 
-
-plt.subplot(2, 1, 1)
-plt.title("Index over Time")
-plt.plot(feature_df['Date'], feature_df['Value'], label='Index', color='black')
-# plt.plot(feature_df['Date'], feature_df[f'Index MA3'], label=f'Index MA3' , color='purple')
-plt.scatter(feature_df['Date'][feature_df['Jump']], feature_df['Value'][feature_df['Jump']], color='red')
-plt.legend()
-plt.subplot(2, 1, 2)
+plt.title("Price over Time")
 plt.plot(feature_df['Date'], feature_df['Close'], label='Price', color='blue')
-plt.scatter(feature_df['Date'][feature_df['Jump']], feature_df['Close'][feature_df['Jump']], color='red')
+plt.scatter(feature_df['Date'][feature_df['Signal'] == "Buy"], feature_df['Close'][feature_df['Signal'] == "Buy"], marker='^', color='green')
+plt.scatter(feature_df['Date'][feature_df['Signal'] == "Sell"], feature_df['Close'][feature_df['Signal'] == "Sell"], marker='v', color='red')
 plt.legend()
 plt.show()
-
-# plt.subplot(2, 1, 1)
-# plt.plot(feature_df['Date'], feature_df['Close'])
-# plt.title("Price over Time")
 
