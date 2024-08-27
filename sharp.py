@@ -3,10 +3,7 @@ import matplotlib.pyplot as plt
 matplotlib.use('QtAgg')
 import pandas as pd
 
-df = pd.read_csv('/home/maksym/Code/GitHub/tradebot/data.csv')
-from backtest import backtest_strategy
-
-feature_df = df.copy()
+feature_df = pd.read_csv('/home/maksym/Code/GitHub/tradebot/data.csv')
 feature_df = feature_df.drop('Label', axis=1)
 
 # (3;1.5) (5;1.25) (7;1.75)
@@ -40,9 +37,19 @@ results_df = pd.DataFrame(results, columns=['MA', 'Porog', 'Buy_Threshold', 'Sel
 # Plot results
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(results_df['MA'], results_df['Sell_Threshold'], results_df['Gain'])
+ax.scatter(results_df['MA'], results_df['Porog'], results_df['Gain'])
 ax.set_xlabel('MA')
-ax.set_ylabel('Sell Threshold')
+ax.set_ylabel('Porog')
+ax.set_zlabel('Gain')
+
+plt.show()
+
+# Plot results
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(results_df['Buy_Threshold'], results_df['Sell_Threshold'], results_df['Gain'])
+ax.set_xlabel('Buy')
+ax.set_ylabel('Sell')
 ax.set_zlabel('Gain')
 
 plt.show()
