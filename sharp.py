@@ -40,9 +40,9 @@ results_df = pd.DataFrame(results, columns=['MA', 'Porog', 'Buy_Threshold', 'Sel
 # Plot results
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(results_df['MA'], results_df['Porog'], results_df['Gain'])
+ax.scatter(results_df['MA'], results_df['Sell_Threshold'], results_df['Gain'])
 ax.set_xlabel('MA')
-ax.set_ylabel('Porog')
+ax.set_ylabel('Sell Threshold')
 ax.set_zlabel('Gain')
 
 plt.show()
