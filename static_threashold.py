@@ -16,7 +16,7 @@ results = []
 for sell in sell_thresholds:
     for buy in buy_thresholds:
         df.loc[df['Value'] < buy, 'Signal'] = 'Buy'
-        df.loc[df['Value'] > sell, 'Signal'] = 'Sell'
+        df.loc[df['Value'] >= sell, 'Signal'] = 'Sell'
         gain = backtest_strategy(df)
         results.append((buy, sell, gain))
 
