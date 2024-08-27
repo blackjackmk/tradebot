@@ -28,7 +28,7 @@ for ma in ma_list:
 
                 feature_df['Signal'] = None
                 feature_df.loc[feature_df['Jump'] & (feature_df['Value'] < buy), 'Signal'] = 'Buy'
-                feature_df.loc[feature_df['Jump'] & (feature_df['Value'] >= sell), 'Signal'] = 'Sell'
+                feature_df.loc[feature_df['Jump'] & (feature_df['Value'] > sell), 'Signal'] = 'Sell'
 
                 gain = backtest_strategy(feature_df)
                 results.append((ma, porog, buy, sell, gain))
@@ -55,4 +55,8 @@ ax.set_ylabel('Sell')
 ax.set_zlabel('Gain')
 
 plt.show()
+
+# Find the best parameters
+best_params = results_df.loc[results_df['Gain'].idxmax()]
+print(best_params)
 

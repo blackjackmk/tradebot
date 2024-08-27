@@ -31,7 +31,6 @@ def backtest_strategy(data):
             last_signal = 'Sell'
             gain_loss.append(balance - initial_balance)
 
-    plot_trading(data)
 
     return sum(gain_loss)
 
