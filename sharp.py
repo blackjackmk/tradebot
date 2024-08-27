@@ -2,6 +2,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use('QtAgg')
 import pandas as pd
+from backtest import backtest_strategy
 
 feature_df = pd.read_csv('/home/maksym/Code/GitHub/tradebot/data.csv')
 feature_df = feature_df.drop('Label', axis=1)
@@ -25,6 +26,7 @@ for ma in ma_list:
                 std_dev = feature_df['Deviation'].std()
                 feature_df['Jump'] = feature_df['Deviation'].abs() > (porog * std_dev)
 
+                feature_df['Signal'] = None
                 feature_df.loc[feature_df['Jump'] & (feature_df['Value'] < buy), 'Signal'] = 'Buy'
                 feature_df.loc[feature_df['Jump'] & (feature_df['Value'] >= sell), 'Signal'] = 'Sell'
 

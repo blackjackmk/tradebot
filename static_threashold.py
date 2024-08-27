@@ -15,6 +15,8 @@ results = []
 
 for sell in sell_thresholds:
     for buy in buy_thresholds:
+        # Reset the DataFrame to remove previous signals
+        df['Signal'] = None
         df.loc[df['Value'] < buy, 'Signal'] = 'Buy'
         df.loc[df['Value'] >= sell, 'Signal'] = 'Sell'
         gain = backtest_strategy(df)
@@ -22,7 +24,6 @@ for sell in sell_thresholds:
 
 # Convert results to DataFrame for easier analysis
 results_df = pd.DataFrame(results, columns=['Buy_Threshold', 'Sell_Threshold', 'Gain'])
-print(results_df)
 
 # Plot results
 fig = plt.figure()
