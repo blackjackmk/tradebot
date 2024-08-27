@@ -7,6 +7,7 @@ import pandas as pd
 import yfinance as yf
 from sklearn.preprocessing import StandardScaler
 
+
 btc = yf.download(tickers='BTC-USD', period='1y')
 btc.reset_index(inplace=True)
 btc_sub = btc[['Date', 'Close']]
@@ -18,6 +19,7 @@ data = response["data"] #list
 df = pd.DataFrame(data)
 df = df.dropna(axis=1)
 df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
+df['value'] = df['value'].astype(int)
 
 df = df.sort_values(by='timestamp')
 df = df.merge(btc_sub, how='left', left_on='timestamp', right_on='Date')
@@ -25,23 +27,18 @@ df = df.dropna()
 df = df.drop(columns='timestamp')
 df = df.rename(columns={'value': 'Value', 'value_classification': 'Label'})
 
-# plt.subplot(2, 1, 1)
-# plt.plot(df['Date'], df['Value'])
-# plt.title("Index Value over Time")
-# plt.subplot(2, 1, 2)
-# plt.plot(df['Date'], df['Close'])
-# plt.show()
+df.to_csv('/home/maksym/Code/GitHub/tradebot/data.csv', index=False)
 
-color_map = {
-    "Extreme Fear": "red",
-    "Fear": "orange",
-    "Neutral": "blue",
-    "Greed": (112/255, 224/255, 0, 1),
-    "Extreme Greed": "green"
-}
-colors = df['Label'].map(color_map)
+# color_map = {
+#     "Extreme Fear": "red",
+#     "Fear": "orange",
+#     "Neutral": "blue",
+#     "Greed": (112/255, 224/255, 0, 1),
+#     "Extreme Greed": "green"
+# }
+# colors = df['Label'].map(color_map)
 
-####CHART#####
+###Scaled CHART#####
 # scale = StandardScaler()
 # df_scaled = scale.fit_transform(df[['Value', 'Close']])
 # df_scaled = pd.DataFrame(df_scaled, columns=['Index', 'Price'])
@@ -49,12 +46,20 @@ colors = df['Label'].map(color_map)
 # df_scaled.plot(x='Date', y = ['Index', 'Price'])
 # plt.show()
 
+# ####SUBPLOT####
+# plt.subplot(2, 1, 1)
+# plt.plot(df['Date'], df['Value'])
+# plt.title("Index Value over Time")
+# plt.subplot(2, 1, 2)
+# plt.plot(df['Date'], df['Close'])
+# plt.show()
+
 ####HISTOGRAM####
 # # df['Value'].plot(kind='kde')
 # df['Value'].plot(kind='hist')
 # plt.show()
 
-#####BAR####
+####BAR####
 # labels_count = df["Label"].value_counts()
 # labels = labels_count.index.to_list()
 # counts = labels_count.to_list()
@@ -64,23 +69,4 @@ colors = df['Label'].map(color_map)
 ###SCATTER#####
 # df.plot(kind='scatter', x='Label', y='Close', c=colors)
 # plt.show()
-
-
-####Backtesting####
-balance = 1000
-btc = 0
-
-for i, row in df.iterrows():
-    if int(row['Value']) < 33 and balance > 0: #index ma być mocnym odchyleniem od średniej
-        btc += balance / row['Close']
-        balance = 0
-        print(f"Buying {btc} BTC at {row['Close']}")
-        print(f"Balance: {balance}")
-    elif int(row['Value']) > 70 and btc > 0:
-        balance += btc * row['Close']
-        print(f"Selling {btc} BTC at {row['Close']}")
-        print(f"Balance: {balance}")
-        btc = 0
-
-print(f"Final Balance: {btc * df['Close'].iloc[-1]}")
 
