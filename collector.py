@@ -8,12 +8,12 @@ import yfinance as yf
 from sklearn.preprocessing import StandardScaler
 
 
-btc = yf.download(tickers='BTC-USD', period='1y')
+btc = yf.download(tickers='BTC-USD', period='5y')
 btc.reset_index(inplace=True)
 btc_sub = btc[['Date', 'Close']]
 btc_sub['Date'] = pd.to_datetime(btc_sub['Date'])
 
-fag = requests.get("https://api.alternative.me/fng/?limit=365") #limit=0 for all data
+fag = requests.get("https://api.alternative.me/fng/?limit=1825") #limit=0 for all data
 response = fag.json() # python dict
 data = response["data"] #list
 df = pd.DataFrame(data)
