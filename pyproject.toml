@@ -1,0 +1,15 @@
+[project]
+name = "tradebot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "datetime>=5.5",
+    "matplotlib>=3.10.1",
+    "pandas>=2.2.3",
+    "pyqt6>=6.9.0",
+    "requests>=2.32.3",
+    "scikit-learn>=1.6.1",
+    "yfinance>=0.2.55",
+]

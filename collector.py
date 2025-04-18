@@ -5,29 +5,40 @@ import matplotlib.pyplot as plt
 matplotlib.use('QtAgg')
 import pandas as pd
 import yfinance as yf
+from datetime import datetime
+import datetime as dt
 from sklearn.preprocessing import StandardScaler
 
 
 btc = yf.download(tickers='BTC-USD', period='max')
-btc.reset_index(inplace=True)
-btc_sub = btc[['Date', 'Close']]
-btc_sub['Date'] = pd.to_datetime(btc_sub['Date'])
+if btc is not None:
+    btc = btc.reset_index()
+else:
+    print("Error: BTC data download failed.")
+    btc = pd.DataFrame()
 
-fag = requests.get("https://api.alternative.me/fng/?limit=0") #limit=0 for all data
+btc_sub = btc[['Date', 'Close']].copy()
+btc_sub.columns = ['Date', 'Close']
+btc_sub['Date'] = pd.to_datetime(btc_sub['Date'])
+btc_sub.reset_index(inplace=True, drop=True)
+
+fag = requests.get("https://api.alternative.me/fng/?limit=0&date_format=cn") #limit=0 for all data
 response = fag.json() # python dict
 data = response["data"] #list
 df = pd.DataFrame(data)
-df = df.dropna(axis=1)
-df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
-df['value'] = df['value'].astype(int)
 
-df = df.sort_values(by='timestamp')
-df = df.merge(btc_sub, how='left', left_on='timestamp', right_on='Date')
+df = df.rename(columns={'value': 'Value', 'value_classification': 'Label', 'timestamp': 'Date'})
+df.drop('time_until_update', axis=1, inplace=True)
+df['Value'] = df['Value'].astype(int)
+df['Date'] = pd.to_datetime(df['Date'])
+df = df.sort_values(by='Date')
+
+
+df = pd.merge(df, btc_sub, how='left', on='Date')
 df = df.dropna()
-df = df.drop(columns='timestamp')
-df = df.rename(columns={'value': 'Value', 'value_classification': 'Label'})
+print(df.head())
 
-df.to_csv('/home/maksym/Code/GitHub/tradebot/data.csv', index=False)
+df.to_csv('./data.csv', index=False)
 
 # color_map = {
 #     "Extreme Fear": "red",
@@ -69,4 +80,3 @@ df.to_csv('/home/maksym/Code/GitHub/tradebot/data.csv', index=False)
 ###SCATTER#####
 # df.plot(kind='scatter', x='Label', y='Close', c=colors)
 # plt.show()
-
