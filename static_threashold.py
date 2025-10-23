@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from backtest import backtest_strategy
 
-df = pd.read_csv('/home/maksym/Code/GitHub/tradebot/data.csv')
+df = pd.read_csv('./data.csv')
 df = df.drop('Label', axis=1)
 
 buy_thresholds = range(55, 10, -5)  # Test buy thresholds from 10 to 50

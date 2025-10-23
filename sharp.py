@@ -4,7 +4,7 @@ matplotlib.use('QtAgg')
 import pandas as pd
 from backtest import backtest_strategy
 
-feature_df = pd.read_csv('/home/maksym/Code/GitHub/tradebot/data.csv')
+feature_df = pd.read_csv('./data.csv')
 feature_df = feature_df.drop('Label', axis=1)
 
 # (3;1.5) (5;1.25) (7;1.75)
@@ -59,4 +59,3 @@ plt.show()
 # Find the best parameters
 best_params = results_df.loc[results_df['Gain'].idxmax()]
 print(best_params)
-
