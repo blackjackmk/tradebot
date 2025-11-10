@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from scipy import stats
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use('QtAgg')
@@ -64,3 +65,23 @@ def backtest_strategy(data):
     equity_series = df['Equity'].astype(float)
 
     return float(equity_series.iloc[-1]) - initial_cash
+
+def is_significant_improvement(results_df, confidence_level=0.95):
+    gains = results_df['Gain'].values
+    best_gain = gains.max()
+
+    # Remove outliers using IQR
+    Q1 = np.percentile(gains, 25)
+    Q3 = np.percentile(gains, 75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+
+    non_outlier_gains = gains[(gains >= lower_bound) & (gains <= upper_bound)]
+
+    if len(non_outlier_gains) < 2:
+        return False
+
+    t_stat, p_value = stats.ttest_1samp(non_outlier_gains, best_gain)
+
+    return p_value < (1 - confidence_level)
