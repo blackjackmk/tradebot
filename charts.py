@@ -18,13 +18,13 @@ color_map = {
 }
 colors = df['Label'].map(color_map)
 
-# ##Scaled CHART#####
-# scale = StandardScaler()
-# df_scaled = scale.fit_transform(df[['Value', 'Close']])
-# df_scaled = pd.DataFrame(df_scaled, columns=['Index', 'Price'])
-# df_scaled.insert(0, "Date", df['Date'], False)
-# df_scaled.plot(x='Date', y = ['Index', 'Price'])
-# plt.show()
+##Scaled CHART#####
+scale = StandardScaler()
+df_scaled = scale.fit_transform(df[['Value', 'Close']])
+df_scaled = pd.DataFrame(df_scaled, columns=['Index', 'Price'])
+df_scaled.insert(0, "Date", df['Date'], False)
+df_scaled.plot(x='Date', y = ['Index', 'Price'])
+plt.show()
 
 # ####SUBPLOT####
 # plt.subplot(2, 1, 1)
