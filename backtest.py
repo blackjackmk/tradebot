@@ -1,17 +1,6 @@
 import pandas as pd
 import numpy as np
 from scipy import stats
-import matplotlib
-import matplotlib.pyplot as plt
-matplotlib.use('QtAgg')
-
-def plot_trading(data):
-    plt.title("Signals")
-    plt.plot(data['Date'], data['Close'], label='Price', color='blue')
-    plt.scatter(data['Date'][data['Signal'] == "Buy"], data['Close'][data['Signal'] == "Buy"], marker='^', color='green')
-    plt.scatter(data['Date'][data['Signal'] == "Sell"], data['Close'][data['Signal'] == "Sell"], marker='v', color='red')
-    plt.legend()
-    plt.show()
 
 def backtest_strategy(data):
     initial_cash = 10000.0  # Starting with $10,000
