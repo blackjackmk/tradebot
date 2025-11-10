@@ -39,7 +39,7 @@ for ma in ma_list:
 for params in param_combinations:
     ma, porog, buy, sell = params
     df_ma = base_df.copy()
-    df_ma = apply_strategy(df_ma, params)
+    df_ma = apply_sharp_strategy(df_ma, params)
 
     gain = backtest_strategy(df_ma)
 

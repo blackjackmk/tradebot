@@ -13,24 +13,26 @@ label_map = {
 	"Greed": 1,
 	"Extreme Greed": 2
 }
-labels = df['Label'].unique()
-df["Factor"] = df['Label'].map(color_map)
+df["Factor"] = df['Label'].map(label_map)
+factors = df['Factor'].unique()
+
+df = df.drop('Label', axis=1)
 
 def apply_label_strategy(df, buy, sell):
     df['Signal'] = None # Reset the DataFrame to remove previous signals
-    df.loc[df['Value'] < buy, 'Signal'] = 'Buy'
-    df.loc[df['Value'] >= sell, 'Signal'] = 'Sell'
+    df.loc[df['Factor'] <= buy, 'Signal'] = 'Buy'
+    df.loc[df['Factor'] >= sell, 'Signal'] = 'Sell'
     return df
 
 results = [] # Store results
 
-for sell in labels:
-    for buy in labels:
-    	if buy == sell:
-     		pass
-        df = apply_label_strategy(df, buy, sell)
-        gain = backtest_strategy(df)
-        results.append((buy, sell, gain))
+for sell in factors:
+				for buy in factors:
+								if buy == sell:
+												continue
+								df = apply_label_strategy(df, buy, sell)
+								gain = backtest_strategy(df)
+								results.append((buy, sell, gain))
 
 # Convert results to DataFrame for easier analysis
 results_df = pd.DataFrame(results, columns=['Buy_Label', 'Sell_Label', 'Gain'])

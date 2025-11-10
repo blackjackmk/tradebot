@@ -19,7 +19,7 @@ results = [] # Store results
 
 for sell in sell_thresholds:
     for buy in buy_thresholds:
-        df = apply_strategy(df, buy, sell)
+        df = apply_static_strategy(df, buy, sell)
         gain = backtest_strategy(df)
         results.append((buy, sell, gain))
 
