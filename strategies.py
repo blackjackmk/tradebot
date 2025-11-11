@@ -14,7 +14,7 @@ class Strategy(ABC):
         self.param_names = []
 
     @abstractmethod
-    def apply_strategy(self, df, params) -> pd.DataFrame:
+    def apply_strategy(self, df=self.base_df.copy(), params) -> pd.DataFrame:
         """
         Apply strategy logic to df and return df with a 'Signal' column set.
         `params` is a tuple of values ordered according to `param_names`.
@@ -140,14 +140,6 @@ class Strategy(ABC):
         plt.xticks(rotation=45)
         plt.tight_layout()
         plt.show()
-
-    def make_data(self, manual_params):
-        signal_map = {'Buy': 1, 'Sell': -1}
-        strategy_df = self.apply_strategy(self.base_df.copy(), manual_params)
-        gain = self.backtest_strategy(strategy_df)
-        print(f"Manual parameters gain: {gain}")
-        self.plot_trading(strategy_df)
-        strategy_df.to_csv(f'./{self.name}_trade.csv', index=False)
 
 class LabelStrategy(Strategy):
     def __init__(self, data_path='./data.csv'):
