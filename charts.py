@@ -17,31 +17,12 @@ color_map = {
 }
 colors = df['Label'].map(color_map)
 
-def price_and_index_chart():
-	scale = StandardScaler()
-	df_scaled = scale.fit_transform(df[['Value', 'Close']])
-	df_scaled = pd.DataFrame(df_scaled, columns=['Index', 'Price'])
-	df_scaled.insert(0, "Date", df['Date'], False)
-	df_scaled.plot(x='Date', y = ['Index', 'Price'])
-	plt.show()
-
-def plot_trading(data):
-    plt.title("Signals")
-    plt.plot(data['Date'], data['Close'], label='Price', color='blue')
-    plt.scatter(data['Date'][data['Signal'] == "Buy"], data['Close'][data['Signal'] == "Buy"], marker='^', color='green')
-    plt.scatter(data['Date'][data['Signal'] == "Sell"], data['Close'][data['Signal'] == "Sell"], marker='v', color='red')
-    plt.legend()
-    plt.show()
-
-def threedimplot(x, y, z, xlabel, ylabel, zlabel):
-	fig = plt.figure()
-	ax = fig.add_subplot(111, projection='3d')
-	ax.scatter(x, y, z)
-	ax.set_xlabel(xlabel)
-	ax.set_ylabel(ylabel)
-	ax.set_zlabel(zlabel)
-	plt.show()
-
+scale = StandardScaler()
+df_scaled = scale.fit_transform(df[['Value', 'Close']])
+df_scaled = pd.DataFrame(df_scaled, columns=['Index', 'Price'])
+df_scaled.insert(0, "Date", df['Date'], False)
+df_scaled.plot(x='Date', y = ['Index', 'Price'])
+plt.show()
 
 # ####SUBPLOT####
 # plt.subplot(2, 1, 1)
