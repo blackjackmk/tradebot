@@ -14,7 +14,7 @@ class Strategy(ABC):
         self.param_names = []
 
     @abstractmethod
-    def apply_strategy(self, df=self.base_df.copy(), params) -> pd.DataFrame:
+    def apply_strategy(self, df: pd.DataFrame, params: tuple) -> pd.DataFrame:
         """
         Apply strategy logic to df and return df with a 'Signal' column set.
         `params` is a tuple of values ordered according to `param_names`.
@@ -162,8 +162,8 @@ class LabelStrategy(Strategy):
         """Apply label-based strategy"""
         buy, sell = params
         df['Signal'] = None
-        df.loc[df['Factor'] <= buy, 'Signal'] = 'Buy'
-        df.loc[df['Factor'] >= sell, 'Signal'] = 'Sell'
+        df.loc[df['Factor'] == buy, 'Signal'] = 'Buy'
+        df.loc[df['Factor'] == sell, 'Signal'] = 'Sell'
         return df
 
     def generate_parameters(self):
@@ -256,3 +256,8 @@ class StaticStrategy(Strategy):
         print("Running Static Strategy Optimization...")
         self.compare_params()
         self.plot_results(self.param_names[0], self.param_names[1], 'Gain', 'Buy', 'Sell', 'Gain')
+
+# Run all strategies
+strategies = [LabelStrategy(), SharpStrategy(), StaticStrategy()]
+for strategy in strategies:
+    strategy.run_optimization()
