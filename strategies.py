@@ -38,7 +38,7 @@ class Strategy(ABC):
 
         col_names = list(self.param_names) + ['Gain']
         self.results_df = pd.DataFrame(results, columns=col_names) # Build results DataFrame
-
+        self.find_the_best()
 
     def backtest_strategy(self, data):
         initial_cash = 10000.0  # Starting with $10,000
@@ -156,7 +156,6 @@ class LabelStrategy(Strategy):
         self.base_df["Factor"] = self.base_df['Label'].map(self.label_map)
         self.base_df = self.base_df.drop('Label', axis=1)
 
-
     def apply_strategy(self, df, params):
         """Apply label-based strategy"""
         buy, sell = params
@@ -179,5 +178,48 @@ class LabelStrategy(Strategy):
         """Complete optimization pipeline"""
         print("Running Label Strategy Optimization...")
         self.compare_params()
-        self.find_the_best()
         self.plot_results(self.param_names[0], self.param_names[1], 'Gain', 'Buy', 'Sell', 'Gain')
+
+class SharpStrategy(Strategy):
+    def __init__(self, data_path='./data.csv'):
+        super().__init__(data_path)
+        self.base_df = self.base_df.drop('Label', axis=1)
+        self.param_names = ['MA', 'Porog', 'Buy_Threshold', 'Sell_Threshold']
+        # Strategy parameters
+        self.ma_list = [3, 5, 7]
+        self.porog_list = [0.75, 1, 1.25, 1.5, 1.75]
+        self.buy_thresholds = range(10, 50, 5)
+        self.sell_thresholds = range(75, 50, -1)
+
+    def apply_strategy(self, df, params):
+        """Apply sharp ratio strategy"""
+        ma, porog, buy_thresh, sell_thresh = params
+        # Calculate moving average and deviation
+        df[f'Index_MA{ma}'] = df['Value'].rolling(window=ma, min_periods=1).mean()
+        df['Deviation'] = df['Value'] - df[f'Index_MA{ma}']
+        std_dev = df['Deviation'].std(ddof=0)
+        df['Jump'] = df['Deviation'].abs() > (porog * std_dev)
+
+        # Generate signals
+        df['Signal'] = None
+        df.loc[df['Jump'] & (df['Value'] < buy_thresh), 'Signal'] = 'Buy'
+        df.loc[df['Jump'] & (df['Value'] > sell_thresh), 'Signal'] = 'Sell'
+
+        return df
+
+    def generate_parameters(self):
+        """Generate all parameter combinations"""
+        param_combinations = []
+        for ma in self.ma_list:
+            for porog in self.porog_list:
+                for buy in self.buy_thresholds:
+                    for sell in self.sell_thresholds:
+                        param_combinations.append((ma, porog, buy, sell))
+        return param_combinations
+
+    def run_optimization(self):
+        """Complete optimization pipeline"""
+        print("Running Label Strategy Optimization...")
+        self.compare_params()
+        self.plot_results(self.param_names[0], self.param_names[1], 'Gain', 'MA', 'Porog', 'Gain')
+        self.plot_results(self.param_names[2], self.param_names[3], 'Gain', 'Buy', 'Sell', 'Gain')
