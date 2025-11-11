@@ -142,6 +142,7 @@ class Strategy(ABC):
 class LabelStrategy(Strategy):
     def __init__(self, data_path='./data.csv'):
         super().__init__(data_path)
+        self.name = "Label"
         self.base_df = self.data.drop('Value', axis=1)
         self.param_names = ['Buy_Label', 'Sell_Label']
 
@@ -183,6 +184,7 @@ class LabelStrategy(Strategy):
 class SharpStrategy(Strategy):
     def __init__(self, data_path='./data.csv'):
         super().__init__(data_path)
+        self.name = "Sharp"
         self.base_df = self.base_df.drop('Label', axis=1)
         self.param_names = ['MA', 'Porog', 'Buy_Threshold', 'Sell_Threshold']
         # Strategy parameters
@@ -223,3 +225,35 @@ class SharpStrategy(Strategy):
         self.compare_params()
         self.plot_results(self.param_names[0], self.param_names[1], 'Gain', 'MA', 'Porog', 'Gain')
         self.plot_results(self.param_names[2], self.param_names[3], 'Gain', 'Buy', 'Sell', 'Gain')
+
+class StaticStrategy(BaseStrategy):
+    def __init__(self, data_path='./data.csv'):
+        super().__init__(data_path)
+        self.name = "Static"
+        self.base_df = self.base_df.drop('Label', axis=1)
+        self.param_names = ['Buy_Threshold', 'Sell_Threshold']
+        # Strategy parameters
+        self.buy_thresholds = range(5, 50, 5)
+        self.sell_thresholds = range(50, 80, 5)
+
+    def apply_strategy(self, df, params):
+        """Apply static threshold strategy"""
+        buy, sell = params
+        df['Signal'] = None
+        df.loc[df['Value'] < buy, 'Signal'] = 'Buy'
+        df.loc[df['Value'] >= sell, 'Signal'] = 'Sell'
+        return df
+
+    def generate_parameters(self):
+        """Generate all parameter combinations"""
+        param_combinations = []
+        for buy in self.buy_thresholds:
+            for sell in self.sell_thresholds:
+                param_combinations.append((buy, sell))
+        return param_combinations
+
+    def run_optimization(self):
+        """Complete optimization pipeline"""
+        print("Running Static Strategy Optimization...")
+        self.compare_params()
+        self.plot_results(self.param_names[0], self.param_names[1], 'Gain', 'Buy', 'Sell', 'Gain')
