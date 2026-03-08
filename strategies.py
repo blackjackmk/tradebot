@@ -32,14 +32,45 @@ class Strategy(ABC):
         for params in param_combinations:
             df2 = self.base_df.copy()
             st_df = self.apply_strategy(df2, params)
-            gain = self.backtest_strategy(st_df)
-            results.append(params + (gain,))
+            metrics = self.backtest_strategy(st_df, return_df=False)
+            results.append(params + (metrics['Gain'], metrics['Sharpe'], metrics['MaxDrawdown']))
 
-        col_names = list(self.param_names) + ['Gain']
+        col_names = list(self.param_names) + ['Gain', 'Sharpe', 'MaxDrawdown']
         self.results_df = pd.DataFrame(results, columns=col_names)  # Build results DataFrame
         self.find_the_best()
 
-    def backtest_strategy(self, data):
+    def calculate_metrics(self, df, initial_cash):
+        """Calculate advanced performance metrics"""
+        equity = df['Equity'].values
+        returns = df['Equity'].pct_change().dropna()
+        
+        # Total Gain
+        total_gain = equity[-1] - initial_cash
+        
+        # Sharpe Ratio (assuming daily data, annualized)
+        # Risk-free rate assumed to be 0 for simplicity
+        if len(returns) > 1 and returns.std() != 0:
+            sharpe = (returns.mean() / returns.std()) * np.sqrt(365)
+        else:
+            sharpe = 0
+            
+        # Maximum Drawdown
+        peak = np.maximum.accumulate(equity)
+        drawdown = (peak - equity) / peak
+        max_drawdown = drawdown.max()
+        
+        # Trade Stats
+        trades = df[df['Trade'].isin(['buy', 'sell'])]
+        num_trades = len(trades)
+        
+        return {
+            'Gain': total_gain,
+            'Sharpe': sharpe,
+            'MaxDrawdown': max_drawdown,
+            'NumTrades': num_trades
+        }
+
+    def backtest_strategy(self, data, return_df=True):
         initial_cash = 10000.0  # Starting with $10,000
         commission = 0.0005    # proportional commission per trade (0.05%)
         slippage = 0.0005      # proportional slippage per trade (0.05%)
@@ -88,10 +119,16 @@ class Strategy(ABC):
             df.at[i, 'Holdings'] = holdings
             df.at[i, 'Equity'] = equity
 
-        equity_series = df['Equity'].astype(float)
-        return float(equity_series.iloc[-1]) - initial_cash
+        metrics = self.calculate_metrics(df, initial_cash)
+        
+        if return_df:
+            return df, metrics
+        return metrics
 
     def find_the_best(self, confidence_level=0.95):
+        if self.results_df.empty:
+            return False
+            
         gains = self.results_df['Gain'].values
         best_gain = gains.max()
 
@@ -112,15 +149,17 @@ class Strategy(ABC):
 
         if p_value < (1 - confidence_level):
             best_params = self.results_df.loc[self.results_df['Gain'].idxmax()]
-            print("Statistically significant best parameters found:")
+            print(f"\n--- Best {self.name} Strategy Found ---")
             print(best_params)
             return True
         else:
-            print("Best result may not be statistically significant")
+            print(f"Best {self.name} result may not be statistically significant")
             return False
 
     def plot_results(self, x_col, y_col, z_col, x_label, y_label, z_label):
         """Plot 3D results"""
+        if self.results_df.empty:
+            return
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.scatter(self.results_df[x_col], self.results_df[y_col], self.results_df[z_col])
@@ -130,21 +169,53 @@ class Strategy(ABC):
         plt.title(f"{self.name} Strategy - {x_label} vs {y_label} vs {z_label}")
         plt.show()
 
-    def plot_trading(self, data):
-        plt.figure(figsize=(12, 6))
-        plt.title(f"{self.name} Strategy - Trading Signals")
-        plt.plot(data['Date'], data['Close'], label='Price', color='blue')
-        plt.scatter(data['Date'][data['Signal'] == "Buy"], data['Close'][data['Signal'] == "Buy"], marker='^', color='green')
-        plt.scatter(data['Date'][data['Signal'] == "Sell"], data['Close'][data['Signal'] == "Sell"], marker='v', color='red')
-        plt.legend()
-        plt.xticks(rotation=45)
+    def plot_trading(self, data, metrics=None):
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
+        
+        dates = pd.to_datetime(data['Date'])
+        
+        # Plot 1: Price and Signals
+        ax1.set_title(f"{self.name} Strategy - Trading Signals")
+        ax1.plot(dates, data['Close'], label='Price', color='blue', alpha=0.6)
+        
+        buy_signals = data[data['Signal'] == "Buy"]
+        sell_signals = data[data['Signal'] == "Sell"]
+        
+        ax1.scatter(pd.to_datetime(buy_signals['Date']), buy_signals['Close'], marker='^', color='green', label='Buy Signal', s=100)
+        ax1.scatter(pd.to_datetime(sell_signals['Date']), sell_signals['Close'], marker='v', color='red', label='Sell Signal', s=100)
+        ax1.set_ylabel('BTC Price')
+        ax1.legend()
+
+        # Plot 2: Equity Curve vs Benchmark
+        initial_equity = data['Equity'].iloc[0]
+        benchmark = (data['Close'] / data['Close'].iloc[0]) * initial_equity
+        
+        ax2.plot(dates, data['Equity'], label='Strategy Equity', color='purple', linewidth=2)
+        ax2.plot(dates, benchmark, label='Buy & Hold Benchmark', color='gray', linestyle='--', alpha=0.7)
+        ax2.set_ylabel('Equity ($)')
+        ax2.set_xlabel('Date')
+        ax2.legend()
+        
+        if metrics:
+            textstr = '\n'.join((
+                f"Total Gain: ${metrics['Gain']:.2f}",
+                f"Sharpe Ratio: {metrics['Sharpe']:.2f}",
+                f"Max Drawdown: {metrics['MaxDrawdown']*100:.2f}%",
+                f"Total Trades: {metrics['NumTrades']}"
+            ))
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax2.text(0.02, 0.95, textstr, transform=ax2.transAxes, fontsize=10,
+                    verticalalignment='top', bbox=props)
+
+        fig.autofmt_xdate(rotation=45)
         plt.tight_layout()
         plt.show()
 
 class LabelStrategy(Strategy):
     def __init__(self, data_path='./data.csv'):
         super().__init__("Label", data_path)
-        self.base_df = self.base_df.drop('Value', axis=1)
+        if 'Value' in self.base_df.columns:
+            self.base_df = self.base_df.drop('Value', axis=1)
         self.param_names = ['Buy_Label', 'Sell_Label']
 
         # Define label mapping
@@ -156,7 +227,8 @@ class LabelStrategy(Strategy):
             "Extreme Greed": 2
         }
         self.base_df["Factor"] = self.base_df['Label'].map(self.label_map)
-        self.base_df = self.base_df.drop('Label', axis=1)
+        # Keep 'Label' for visualization or remove it if not needed
+        # self.base_df = self.base_df.drop('Label', axis=1)
 
     def apply_strategy(self, df, params):
         """Apply label-based strategy"""
@@ -185,7 +257,7 @@ class LabelStrategy(Strategy):
 class SharpStrategy(Strategy):
     def __init__(self, data_path='./data.csv'):
         super().__init__("Sharp", data_path)
-        self.base_df = self.base_df.drop('Label', axis=1)
+        # self.base_df = self.base_df.drop('Label', axis=1)
         self.param_names = ['MA', 'Porog', 'Buy_Threshold', 'Sell_Threshold']
         # Strategy parameters
         self.ma_list = [3, 5, 7]
@@ -229,7 +301,7 @@ class SharpStrategy(Strategy):
 class StaticStrategy(Strategy):
     def __init__(self, data_path='./data.csv'):
         super().__init__("Static", data_path)
-        self.base_df = self.base_df.drop('Label', axis=1)
+        # self.base_df = self.base_df.drop('Label', axis=1)
         self.param_names = ['Buy_Threshold', 'Sell_Threshold']
         # Strategy parameters
         self.buy_thresholds = range(5, 50, 5)
@@ -256,8 +328,3 @@ class StaticStrategy(Strategy):
         print("Running Static Strategy Optimization...")
         self.compare_params()
         self.plot_results(self.param_names[0], self.param_names[1], 'Gain', 'Buy', 'Sell', 'Gain')
-
-# Run all strategies
-strategies = [LabelStrategy(), SharpStrategy(), StaticStrategy()]
-for strategy in strategies:
-    strategy.run_optimization()
