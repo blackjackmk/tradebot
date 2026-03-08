@@ -2,3 +2,5 @@
 /.ropeproject
 /__pycache__
 /.zed
+/.ruff_cache
+GEMINI.md

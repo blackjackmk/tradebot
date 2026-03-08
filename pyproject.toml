@@ -11,5 +11,9 @@ dependencies = [
     "pyqt6>=6.9.0",
     "requests>=2.32.3",
     "scikit-learn>=1.6.1",
+    "tensorflow>=2.20.0",
     "yfinance>=0.2.55",
 ]
+
+[tool.ty]
+type_checking_mode = "standard"
